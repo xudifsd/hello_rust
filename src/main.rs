@@ -130,6 +130,25 @@ impl<'a, T> List<'a, T> where T: PartialOrd + 'a {
     }
 }
 
+fn reverse_list<'a, T>(head: Option<Box<ListNode<'a, T>>>) -> Option<Box<ListNode<'a, T>>>
+    where T: 'a + PartialOrd {
+        if let Some(mut p) = head {
+            let mut tail = None;
+            loop {
+                let p_next = p.next.take();
+                p.next = tail;
+                tail = Some(p);
+                match p_next {
+                    None => break,
+                    _    => p = p_next.unwrap(),
+                };
+            };
+            tail
+        } else {
+            None
+        }
+}
+
 #[test]
 fn test_list_insert_pop() {
     let one = 1;
@@ -146,6 +165,30 @@ fn test_list_insert_pop() {
 
     match (p3, p4) {
         (Some(p3), Some(p4)) => assert!(p3 == p2 && p4 == p1),
+        _ => assert!(false),
+    };
+}
+
+#[test]
+fn test_reverse() {
+    let one = 1;
+    let two = 2;
+    let p1 = &one;
+    let p2 = &two;
+    let mut head = List::new();
+
+    head.insert(p1);
+    head.insert(p2);
+    let hh = head.head.unwrap();
+    let reversed = reverse_list(Some(hh));
+
+    head.head = reversed;
+
+    let p3 = head.pop();
+    let p4 = head.pop();
+
+    match (p3, p4) {
+        (Some(p3), Some(p4)) => assert!(p3 == p1 && p4 == p2),
         _ => assert!(false),
     };
 }

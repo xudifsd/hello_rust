@@ -1,5 +1,7 @@
 use std::ops::Add;
 
+use std::rc::Rc;
+
 ////////
 
 struct Node<'a, T> where T: 'a {
@@ -128,11 +130,10 @@ impl<'a, T> List<'a, T> where T: PartialOrd + 'a {
             None
         }
     }
-}
-
-fn reverse_list<'a, T>(head: Option<Box<ListNode<'a, T>>>) -> Option<Box<ListNode<'a, T>>>
-    where T: 'a + PartialOrd {
-        if let Some(mut p) = head {
+    // it seems we can not implement reverse using &mut self, because
+    // we have to own it to implement
+    fn reverse(mut self) -> List<'a, T> {
+        if let Some(mut p) = self.head {
             let mut tail = None;
             loop {
                 let p_next = p.next.take();
@@ -143,10 +144,10 @@ fn reverse_list<'a, T>(head: Option<Box<ListNode<'a, T>>>) -> Option<Box<ListNod
                     _    => p = p_next.unwrap(),
                 };
             };
-            tail
-        } else {
-            None
+            self.head = tail;
         }
+        self
+    }
 }
 
 #[test]
@@ -179,10 +180,7 @@ fn test_reverse() {
 
     head.insert(p1);
     head.insert(p2);
-    let hh = head.head.unwrap();
-    let reversed = reverse_list(Some(hh));
-
-    head.head = reversed;
+    head = head.reverse();
 
     let p3 = head.pop();
     let p4 = head.pop();
@@ -243,8 +241,8 @@ fn test_stack() {
     s.push(1);
     s.push(2);
     s.push(3);
-    assert_some_and_eq!(s.pop(), 3);
-    assert_some_and_eq!(s.pop(), 2);
+    assert!(s.pop().unwrap() == 3);
+    assert!(s.pop().unwrap() == 2);
     assert_some_and_eq!(s.pop(), 1);
     assert!(s.pop().is_none());
 }
@@ -268,6 +266,30 @@ fn test_struct_ownership() {
     assert!(b.dummy == 2);
 }
 
+struct Foo {
+    val: i32,
+}
+
+impl Drop for Foo {
+    fn drop(&mut self) {
+        println!("dropping");
+    }
+}
+
+fn test_drop() {
+    {
+        let rc1 = Rc::new(Box::new(Foo{val: 42}));
+        println!("aaa");
+        {
+            let rc2 = rc1.clone();
+            println!("bbb");
+        }
+        println!("ccc");
+    }
+    println!("out scope");
+}
+
 fn main() {
+    test_drop();
     println!("-----------");
 }

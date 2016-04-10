@@ -3,4 +3,8 @@ name = "hello_rust"
 version = "0.1.0"
 authors = ["Di Xu <xudifsd@gmail.com>"]
 
+[lib]
+name = "tree"
+path = "src/tree.rs"
+
 [dependencies]

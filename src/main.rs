@@ -2,6 +2,10 @@ use std::ops::Add;
 
 use std::rc::Rc;
 
+extern crate tree;
+
+use tree::Tree;
+
 ////////
 
 struct Node<'a, T> where T: 'a {
@@ -292,4 +296,10 @@ fn test_drop() {
 fn main() {
     test_drop();
     println!("-----------");
+
+    let mut t = Tree::new();
+    t.insert(1);
+    t.insert(100);
+    t.insert(50);
+    assert_eq!(t.into_vec(), vec![&1, &50, &100]);
 }
